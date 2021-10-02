@@ -1,0 +1,4 @@
+kafkaCerts
+.env
+# Project exclude paths
+/venv/
