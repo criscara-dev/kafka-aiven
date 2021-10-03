@@ -12,7 +12,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PG_USER_PASS = os.getenv("PG_USER_PASS")
+PG_SUPER_PASS = os.getenv("PG_SUPER_PASS")
+SERVER_URL = os.getenv("SERVER_URL")
+CLIENT_ID = os.getenv("CLIENT_ID")
+GROUP_ID = os.getenv("GROUP_ID")
+
+PG_DBNAME = os.getenv("PG_DBNAME")
+PG_SUPER_USER = os.getenv("PG_SUPER_USER")
+PG_HOST = os.getenv("PG_HOST")
+PG_PORT = os.getenv("PG_PORT")
+PG_USER = os.getenv("PG_USER")
 
 def consumer_run():
     try:
@@ -21,9 +30,9 @@ def consumer_run():
         consumer = KafkaConsumer(
             "jdbc_sink",
             auto_offset_reset="earliest",
-            bootstrap_servers="kafka-1553967d-project-b54b.aivencloud.com:22903",
-            client_id="demo-client-1",
-            group_id="demo-group",
+            bootstrap_servers=SERVER_URL,
+            client_id=CLIENT_ID,
+            group_id=GROUP_ID,
             security_protocol="SSL",
             ssl_cafile=folder_name + "ca.pem",
             ssl_certfile=folder_name + "service.cert",
@@ -39,24 +48,18 @@ def consumer_run():
 
             # connect to the PostgreSQL server
             print('Connecting to the PostgreSQL database...')
-            pg_dbname = "defaultdb"
-            pg_super_user = "avnadmin"
-            pg_host = "pg-31f5faa7-project-b54b.aivencloud.com"
-            pg_port = 22901
-            pg_super_pwd = PG_USER_PASS
-            pg_user = "avnadmin"
 
-            conn = psycopg2.connect(dbname=pg_dbname,
-                                    user=pg_super_user,
-                                    host=pg_host,
-                                    port=pg_port,
-                                    password=pg_super_pwd,
+            conn = psycopg2.connect(dbname=PG_DBNAME,
+                                    user=PG_SUPER_USER,
+                                    host=PG_HOST,
+                                    port=PG_PORT,
+                                    password=PG_SUPER_PASS,
                                     sslmode='require')
 
             # create a cursor
             cur = conn.cursor()
-            cur.execute("GRANT CONNECT ON DATABASE defaultdb TO " + pg_user + ";")
-            cur.execute("GRANT USAGE ON SCHEMA public TO " + pg_user + ";")
+            cur.execute("GRANT CONNECT ON DATABASE defaultdb TO " + PG_USER + ";")
+            cur.execute("GRANT USAGE ON SCHEMA public TO " + PG_USER + ";")
 
             # execute a statement
             print('PostgreSQL database version:')

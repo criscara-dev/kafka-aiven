@@ -3,6 +3,16 @@
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
 import json
+import os
+from faker import Faker
+
+
+# PG_USER_PASS = os.environ['PG_PASS']
+from dotenv import load_dotenv
+
+load_dotenv()
+
+SERVER_URL = os.getenv("SERVER_URL")
 
 
 def producer_run():
@@ -10,7 +20,7 @@ def producer_run():
         folderName = "kafkaCerts/"
 
         producer = KafkaProducer(
-            bootstrap_servers="kafka-1553967d-project-b54b.aivencloud.com:22903",
+            bootstrap_servers=SERVER_URL,
             security_protocol="SSL",
             ssl_cafile=folderName + "ca.pem",
             ssl_certfile=folderName + "service.cert",
@@ -49,18 +59,18 @@ def producer_run():
             ]
         }
 
-        producer.send(
-            "jdbc_sink" + "_schema",
-            key={"schema": key_schema, "payload": {"id": 1}},
-            value={"schema": value_schema,
-                   "payload": {"name": "John Watson", "address": "Baker Street, 221", "telephone": "0737846583"}}
-        )
+        # send fake data to test service; in real scenario data won't be hardcoded
+        fake = Faker()
+        name = fake.name()
+        address = fake.address()
+        phone_number = fake.phone_number()
+        unique_id = fake.iana_id()
 
         producer.send(
             "jdbc_sink" + "_schema",
-            key={"schema": key_schema, "payload": {"id": 2}},
+            key={"schema": key_schema, "payload": {"id": unique_id}},
             value={"schema": value_schema,
-                   "payload": {"name": "Sherlock Holmes", "address": "Baker Street, 221", "telephone": "0737846583"}}
+                   "payload": {"name": name, "address": address, "telephone": phone_number}}
         )
 
         # Force sending of all messages
